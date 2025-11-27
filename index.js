@@ -16,4 +16,11 @@ connectDB();
 // Routes
 app.use("/api/auth", require("./routes/authRoutes"));
 
-app.listen(5000, () => console.log("Server running on port 5000"));
+// Root endpoint
+app.get("/", (req, res) => {
+    res.send("WSA backend server is live!");
+});
+
+// Use dynamic port for Render deployment
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
