@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  static const String baseUrl = "https://wsa-1.onrender.com"; // CHANGE THIS
+  static const String baseUrl = "https://wsa-1.onrender.com";
 
   // Signup API
   static Future<Map<String, dynamic>> signup(
@@ -29,9 +29,10 @@ class ApiService {
     return jsonDecode(response.body);
   }
 
-  // Login API
+  // Login API (email OR phone)
   static Future<Map<String, dynamic>> login(
     String phone,
+    String email,
     String password,
   ) async {
     final url = Uri.parse("$baseUrl/api/auth/login");
@@ -39,7 +40,7 @@ class ApiService {
     final response = await http.post(
       url,
       headers: {"Content-Type": "application/json"},
-      body: jsonEncode({"phone": phone, "password": password}),
+      body: jsonEncode({"phone": phone, "email": email, "password": password}),
     );
 
     return jsonDecode(response.body);

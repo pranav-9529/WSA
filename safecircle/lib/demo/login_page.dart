@@ -9,7 +9,8 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final phoneController = TextEditingController();
+  final loginController =
+      TextEditingController(); // single field for email/phone
   final passwordController = TextEditingController();
 
   bool loading = false;
@@ -17,10 +18,20 @@ class _LoginPageState extends State<LoginPage> {
   void loginUser() async {
     setState(() => loading = true);
 
-    final res = await ApiService.login(
-      phoneController.text,
-      passwordController.text,
-    );
+    String input = loginController.text.trim();
+    String password = passwordController.text.trim();
+
+    // Identify input: phone or email
+    String email = "";
+    String phone = "";
+
+    if (input.contains("@")) {
+      email = input; // it's email
+    } else {
+      phone = input; // it's phone
+    }
+
+    final res = await ApiService.login(phone, email, password);
 
     setState(() => loading = false);
 
@@ -42,16 +53,19 @@ class _LoginPageState extends State<LoginPage> {
         child: Column(
           children: [
             TextField(
-              controller: phoneController,
-              decoration: InputDecoration(labelText: "Phone"),
+              controller: loginController,
+              decoration: InputDecoration(
+                labelText: "Enter Phone No. OR Email",
+              ),
             ),
+            SizedBox(height: 15),
             TextField(
               controller: passwordController,
               decoration: InputDecoration(labelText: "Password"),
               obscureText: true,
             ),
+            SizedBox(height: 25),
 
-            SizedBox(height: 20),
             loading
                 ? CircularProgressIndicator()
                 : ElevatedButton(onPressed: loginUser, child: Text("Login")),
@@ -64,7 +78,7 @@ class _LoginPageState extends State<LoginPage> {
                   MaterialPageRoute(builder: (context) => SignupPage()),
                 );
               },
-              child: Text("don't have an account, Signup"),
+              child: Text("Don't have an account? Signup"),
             ),
           ],
         ),
