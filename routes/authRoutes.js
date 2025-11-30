@@ -21,15 +21,24 @@ router.post("/signup", async (req, res) => {
 
 // Login
 router.post("/login", async (req, res) => {
-  const { phone, password } = req.body;
+  const { email, phone, password } = req.body;
 
   try {
-    if (!phone || !password) {
-      return res.status(400).json({ message: "Phone and password required" });
+    // Check password
+    if (!password) {
+      return res.status(400).json({ message: "Password is required" });
     }
 
-    // Find user by phone
-    const user = await User.findOne({ phone });
+    // At least one of email or phone must be sent
+    if (!email && !phone) {
+      return res.status(400).json({ message: "Email or Phone is required" });
+    }
+
+    // Find user by email or phone
+    const user = await User.findOne({
+      $or: [{ email: email }, { phone: phone }]
+    });
+
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -56,6 +65,7 @@ router.post("/login", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
 
 
 
