@@ -37,4 +37,33 @@ router.get("/all", async (req, res) => {
   }
 });
 
+// DELETE MULTIPLE FOLDERS
+const Contact = require("../models/contact");  // ADD THIS
+
+router.delete("/delete/:id", async (req, res) => {
+  try {
+    const folderId = req.params.id;
+
+    // Delete Folder
+    const folder = await Folder.findByIdAndDelete(folderId);
+
+    if (!folder) {
+      return res.status(404).json({ success: false, message: "Folder not found" });
+    }
+
+    // Delete contacts inside that folder (CASCADE DELETE)
+    await Contact.deleteMany({ folderID: folderId });
+
+    res.json({
+      success: true,
+      message: "Folder and its contacts deleted successfully"
+    });
+
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+
+
 module.exports = router;

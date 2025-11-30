@@ -44,5 +44,18 @@ router.get("/:folderId", async (req, res) => {
   }
 });
 
+// DELETE MULTIPLE CONTACTS
+router.post("/delete-multiple", async (req, res) => {
+  try {
+    const { ids } = req.body;
+
+    await Contact.deleteMany({ _id: { $in: ids } });
+
+    res.json({ success: true, message: "Contacts deleted" });
+  } catch (error) {
+    res.status(500).json({ success: false });
+  }
+});
+
 
 module.exports = router;
