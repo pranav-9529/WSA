@@ -2,60 +2,58 @@ const express = require("express");
 const router = express.Router();
 const Contact = require("../models/contact");
 
-//Create Contact
+// Create Contact (with userID)
 router.post("/create", async (req, res) => {
-    try {
-        const { folderID, c_name, c_phone } = req.body;
+  try {
+    const { folderID, c_name, c_phone, userID } = req.body;
 
-        if (!folderID || !c_name || !c_phone) {
-            return res.status(400).json({ success: false, message: "All fields are required !"});
-        }
+    if (!folderID || !c_name || !c_phone || !userID) {
+      return res.status(400).json({ success: false, message: "All fields + userID required!" });
+    }
 
-        const contact = await Contact.create({
+    const contact = await Contact.create({
       folderID,
       c_name,
       c_phone,
+      userID
     });
 
     res.json({ success: true, contact });
-    }
-    catch (error) {
-        res.status(500).json({ success: false, error: error.message});
-    }
-})
+  }
+  catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
 
-// GET CONTACTS OF A SPECIFIC FOLDER
-router.get("/:folderId", async (req, res) => {
+// Get contacts of that folder for that user
+router.get("/:folderId/:userID", async (req, res) => {
   try {
-    const { folderId } = req.params;
+    const { folderId, userID } = req.params;
 
-    const contacts = await Contact.find({ folderID: folderId }).sort({ createdAt: -1 });
+    const contacts = await Contact.find({ folderID: folderId, userID })
+      .sort({ createdAt: -1 });
 
-    return res.status(200).json({
-      success: true,
-      contacts,
-    });
+    return res.status(200).json({ success: true, contacts });
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: "Error while fetching contacts",
+      message: "Error fetching contacts",
       error: error.message,
     });
   }
 });
 
-// DELETE MULTIPLE CONTACTS
+// Delete multiple contacts only of that user
 router.post("/delete-multiple", async (req, res) => {
   try {
-    const { ids } = req.body;
+    const { ids, userID } = req.body;
 
-    await Contact.deleteMany({ _id: { $in: ids } });
+    await Contact.deleteMany({ _id: { $in: ids }, userID });
 
     res.json({ success: true, message: "Contacts deleted" });
   } catch (error) {
     res.status(500).json({ success: false });
   }
 });
-
 
 module.exports = router;
