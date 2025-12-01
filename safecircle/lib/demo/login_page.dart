@@ -1,7 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:safecircle/demo/signup_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'api_service.dart';
 import 'home_page.dart';
+import 'signup_page.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Login App',
+      theme: ThemeData(primarySwatch: Colors.blue),
+      debugShowCheckedModeBanner: false,
+      home: LoginPage(),
+    );
+  }
+}
 
 class LoginPage extends StatefulWidget {
   @override
@@ -9,38 +26,68 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final loginController =
-      TextEditingController(); // single field for email/phone
+  final loginController = TextEditingController();
   final passwordController = TextEditingController();
-
   bool loading = false;
 
   void loginUser() async {
+    final input = loginController.text.trim();
+    final password = passwordController.text.trim();
+
+    if (input.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Please enter login & password")));
+      return;
+    }
+
     setState(() => loading = true);
 
-    String input = loginController.text.trim();
-    String password = passwordController.text.trim();
-
-    // Identify input: phone or email
     String email = "";
     String phone = "";
 
     if (input.contains("@")) {
-      email = input; // it's email
+      email = input;
     } else {
-      phone = input; // it's phone
+      phone = input;
     }
 
-    final res = await ApiService.login(phone, email, password);
+    try {
+      final res = await ApiService.login(
+        phone: phone,
+        email: email,
+        password: password,
+      );
 
-    setState(() => loading = false);
+      setState(() => loading = false);
 
-    if (res["message"] == "Login successful") {
-      Navigator.push(context, MaterialPageRoute(builder: (_) => HomePage()));
-    } else {
+      if (res != null && res["success"] == true) {
+        // Save token & userID
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        if (res["token"] != null && res["userID"] != null) {
+          await prefs.setString("token", res["token"]);
+          await prefs.setString("userID", res["userID"]);
+
+          // Navigate to HomePage using pushAndRemoveUntil to prevent going back
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) => HomePage()),
+            (route) => false,
+          );
+        } else {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text("Invalid login data")));
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(res?["message"] ?? "Login failed")),
+        );
+      }
+    } catch (e) {
+      setState(() => loading = false);
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text(res["message"].toString())));
+      ).showSnackBar(SnackBar(content: Text("Network error: $e")));
     }
   }
 
@@ -48,7 +95,7 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text("Login")),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: EdgeInsets.all(16),
         child: Column(
           children: [
@@ -56,26 +103,28 @@ class _LoginPageState extends State<LoginPage> {
               controller: loginController,
               decoration: InputDecoration(
                 labelText: "Enter Phone No. OR Email",
+                border: OutlineInputBorder(),
               ),
             ),
             SizedBox(height: 15),
             TextField(
               controller: passwordController,
-              decoration: InputDecoration(labelText: "Password"),
+              decoration: InputDecoration(
+                labelText: "Password",
+                border: OutlineInputBorder(),
+              ),
               obscureText: true,
             ),
             SizedBox(height: 25),
-
             loading
                 ? CircularProgressIndicator()
                 : ElevatedButton(onPressed: loginUser, child: Text("Login")),
-
             SizedBox(height: 20),
             TextButton(
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => SignupPage()),
+                  MaterialPageRoute(builder: (_) => SignupPage()),
                 );
               },
               child: Text("Don't have an account? Signup"),
