@@ -38,7 +38,15 @@ class _FolderScreenState extends State<FolderScreen> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     token = prefs.getString("token");
     userID = prefs.getString("userID");
-    if (token != null && userID != null) _fetchFolders();
+
+    print("DEBUG → TOKEN: $token");
+    print("DEBUG → USER ID: $userID");
+
+    if (token != null && userID != null) {
+      _fetchFolders();
+    } else {
+      print("DEBUG → USER NOT LOGGED IN");
+    }
   }
 
   Future<void> _fetchFolders() async {
@@ -70,6 +78,7 @@ class _FolderScreenState extends State<FolderScreen> {
     if (name.isEmpty) return;
 
     setState(() => isLoading = true);
+
     try {
       final res = await http.post(
         Uri.parse("$baseUrl/create"),
@@ -77,12 +86,17 @@ class _FolderScreenState extends State<FolderScreen> {
           "Content-Type": "application/json",
           "Authorization": "Bearer $token",
         },
-        body: json.encode({"foldername": name}),
+        body: json.encode({
+          "foldername": name,
+          "userID": userID, // ✅ REQUIRED
+        }),
       );
+
       final data = json.decode(res.body);
+
       if (res.statusCode == 200 && data['success'] == true) {
         folderController.clear();
-        _fetchFolders();
+        _fetchFolders(); // refresh list
         _showMessage("Folder created");
       } else {
         _showMessage(data['message'] ?? "Create failed");

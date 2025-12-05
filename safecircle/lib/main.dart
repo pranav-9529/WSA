@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:safecircle/demo/login_page.dart';
 import 'package:safecircle/demo/signup_page.dart';
 import 'package:safecircle/screens/map/map.dart';
+import 'package:safecircle/screens/onbording/onbording.dart';
 
 void main() {
   runApp(const MyApp());
@@ -63,9 +64,19 @@ class FirstPage extends StatelessWidget {
                     button1(name: "Sign in Page", pagename: SignupPage()),
                     SizedBox(height: 10),
                     button1(
+                      name: "Onbording Screen",
+                      pagename: ImageCarouselScreen(),
+                    ),
+                    SizedBox(height: 10),
+                    button1(
                       name: "Map page",
                       pagename: MapPage(lat: 20.51, lon: 75.15),
                     ),
+                    SizedBox(height: 10),
+                    // button1(
+                    //   name: "WSABottomNav",
+                    //   pagename: WSABottomNav(currentIndex: 0, onTap: (p0) {}),
+                    // ),
                   ],
                 ),
               ),

@@ -61,26 +61,29 @@ class _LoginPageState extends State<LoginPage> {
 
       setState(() => loading = false);
 
-      if (res != null && res["success"] == true) {
-        // Save token & userID
+      if (res["success"] == true) {
         SharedPreferences prefs = await SharedPreferences.getInstance();
-        if (res["token"] != null && res["userID"] != null) {
-          await prefs.setString("token", res["token"]);
-          await prefs.setString("userID", res["userID"]);
+        await prefs.setString("token", res["token"]);
+        await prefs.setString("userID", res["userID"]);
 
-          // Navigate to HomePage using pushAndRemoveUntil to prevent going back
-          Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (_) => HomePage()),
-            (route) => false,
-          );
-        } else {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text("Invalid login data")));
-        }
+        print("TOKEN SAVED = ${res["token"]}");
+        print("USER ID SAVED = ${res["userID"]}");
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Login Successful"),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        // Navigate after success
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => HomePage()),
+        );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(res?["message"] ?? "Login failed")),
+          SnackBar(content: Text(res["message"] ?? "Login failed")),
         );
       }
     } catch (e) {
