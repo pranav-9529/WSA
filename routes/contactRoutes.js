@@ -44,11 +44,12 @@ router.get("/:folderId/:userID", async (req, res) => {
 });
 
 // Delete multiple contacts only of that user
-router.post("/delete-multiple", async (req, res) => {
+router.post("/delete-multiple/:userID/:folderID", async (req, res) => {
   try {
-    const { ids, userID } = req.body;
+    const { ids } = req.body;
+    const { userID, folderID } = req.params;
 
-    await Contact.deleteMany({ _id: { $in: ids }, userID });
+    await Contact.deleteMany({ _id: { $in: ids }, userID, folderID });
 
     res.json({ success: true, message: "Contacts deleted" });
   } catch (error) {
