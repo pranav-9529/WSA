@@ -56,4 +56,36 @@ router.post("/delete-multiple", async (req, res) => {
   }
 });
 
+// Search Contacts
+// Example query: /search?query=John&folderID=123
+router.get("/search", async (req, res) => {
+    try {
+        const { query, folderID } = req.query;
+
+        if (!query) {
+            return res.status(400).json({ success: false, message: "Search query is required" });
+        }
+
+        // Build search condition
+        let searchCondition = {
+            $or: [
+                { c_name: { $regex: query, $options: "i" } }, // case-insensitive name search
+                { c_phone: { $regex: query, $options: "i" } } // phone search
+            ]
+        };
+
+        // If folderID provided, add it to the condition
+        if (folderID) {
+            searchCondition.folderID = folderID;
+        }
+
+        const contacts = await Contact.find(searchCondition);
+
+        res.json({ success: true, contacts });
+    } catch (error) {
+        console.error("Error searching contacts:", error);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+});
+
 module.exports = router;

@@ -4,24 +4,39 @@ const Folder = require("../models/folder");
 const Contact = require("../models/contact");
 
 // Create Folder (with userID)
-router.post("/create", async (req, res) => {
+router.post("/create/:userID", async (req, res) => {
   try {
-    const { foldername, userID } = req.body;
+    const { userID } = req.params;        // ← take userID from URL
+    const { foldername } = req.body;      // ← take folder name from body
 
     if (!foldername || !userID) {
-      return res.status(400).json({ success: false, message: "Folder name and userID required!" });
+      return res.status(400).json({
+        success: false,
+        message: "Folder name and userID required!",
+      });
     }
 
-    const folder = await Folder.create({ foldername, userID });
+    const folder = await Folder.create({
+      foldername,
+      userID,
+    });
 
-    res.json({ success: true, folder });
+    return res.json({
+      success: true,
+      folder,
+    });
+
   } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
+    return res.status(500).json({
+      success: false,
+      error: error.message,
+    });
   }
 });
 
+
 // GET ALL folders of that user
-router.get("/all/:userID", async (req, res) => {
+router.get("/:userID", async (req, res) => {
   try {
     const folders = await Folder.find({ userID: req.params.userID })
       .sort({ createdAt: -1 });
