@@ -1,140 +1,103 @@
-import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'api_service.dart';
-import 'home_page.dart';
-import 'signup_page.dart';
+// import 'package:flutter/material.dart';
+// import 'package:shared_preferences/shared_preferences.dart';
+// import 'api_service.dart';
+// import 'home_page.dart';
 
-void main() {
-  runApp(MyApp());
-}
+// class LoginPage extends StatefulWidget {
+//   const LoginPage({super.key});
 
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Login App',
-      theme: ThemeData(primarySwatch: Colors.blue),
-      debugShowCheckedModeBanner: false,
-      home: LoginPage(),
-    );
-  }
-}
+//   @override
+//   State<LoginPage> createState() => _LoginPageState();
+// }
 
-class LoginPage extends StatefulWidget {
-  @override
-  State<LoginPage> createState() => _LoginPageState();
-}
+// class _LoginPageState extends State<LoginPage> {
+//   final TextEditingController loginController = TextEditingController();
+//   final TextEditingController passwordController = TextEditingController();
+//   bool isLoading = false;
 
-class _LoginPageState extends State<LoginPage> {
-  final loginController = TextEditingController();
-  final passwordController = TextEditingController();
-  bool loading = false;
+//   Future<void> loginUser() async {
+//     final loginInput = loginController.text.trim();
+//     final password = passwordController.text.trim();
 
-  void loginUser() async {
-    final input = loginController.text.trim();
-    final password = passwordController.text.trim();
+//     if (loginInput.isEmpty || password.isEmpty) {
+//       ScaffoldMessenger.of(context).showSnackBar(
+//         const SnackBar(content: Text("Email/Phone and Password are required")),
+//       );
+//       return;
+//     }
 
-    if (input.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Please enter login & password")));
-      return;
-    }
+//     setState(() => isLoading = true);
 
-    setState(() => loading = true);
+//     try {
+//       final res = await ApiService.login(
+//         email: loginInput,
+//         phone: loginInput,
+//         password: password,
+//       );
 
-    String email = "";
-    String phone = "";
+//       setState(() => isLoading = false);
 
-    if (input.contains("@")) {
-      email = input;
-    } else {
-      phone = input;
-    }
+//       print("Login Response: $res");
 
-    try {
-      final res = await ApiService.login(
-        phone: phone,
-        email: email,
-        password: password,
-      );
+//       if (res["success"] == true) {
+//         final prefs = await SharedPreferences.getInstance();
 
-      setState(() => loading = false);
+//         await prefs.setString("token", res["token"] ?? "");
+//         await prefs.setString("userID", res["_id"].toString());
 
-      if (res["success"] == true) {
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setString("token", res["token"]);
-        await prefs.setString("userID", res["userID"]);
+//         ScaffoldMessenger.of(
+//           context,
+//         ).showSnackBar(const SnackBar(content: Text("Login Successful!")));
 
-        print("TOKEN SAVED = ${res["token"]}");
-        print("USER ID SAVED = ${res["userID"]}");
+//         // ⭐⭐ FORCE NAVIGATION FIX ⭐⭐
+//         Future.microtask(() {
+//           Navigator.pushAndRemoveUntil(
+//             context,
+//             MaterialPageRoute(builder: (context) => HomePage()),
+//             (route) => false,
+//           );
+//         });
+//       } else {
+//         ScaffoldMessenger.of(context).showSnackBar(
+//           SnackBar(content: Text(res["message"] ?? "Login Failed")),
+//         );
+//       }
+//     } catch (e) {
+//       setState(() => isLoading = false);
+//       ScaffoldMessenger.of(
+//         context,
+//       ).showSnackBar(SnackBar(content: Text("Error: $e")));
+//     }
+//   }
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Login Successful"),
-            backgroundColor: Colors.green,
-          ),
-        );
-
-        // Navigate after success
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => HomePage()),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(res["message"] ?? "Login failed")),
-        );
-      }
-    } catch (e) {
-      setState(() => loading = false);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Network error: $e")));
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text("Login")),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          children: [
-            TextField(
-              controller: loginController,
-              decoration: InputDecoration(
-                labelText: "Enter Phone No. OR Email",
-                border: OutlineInputBorder(),
-              ),
-            ),
-            SizedBox(height: 15),
-            TextField(
-              controller: passwordController,
-              decoration: InputDecoration(
-                labelText: "Password",
-                border: OutlineInputBorder(),
-              ),
-              obscureText: true,
-            ),
-            SizedBox(height: 25),
-            loading
-                ? CircularProgressIndicator()
-                : ElevatedButton(onPressed: loginUser, child: Text("Login")),
-            SizedBox(height: 20),
-            TextButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => SignupPage()),
-                );
-              },
-              child: Text("Don't have an account? Signup"),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(title: const Text("Login")),
+//       body: Padding(
+//         padding: const EdgeInsets.all(20),
+//         child: Column(
+//           children: [
+//             TextFormField(
+//               controller: loginController,
+//               decoration: const InputDecoration(labelText: "Email or Phone"),
+//             ),
+//             const SizedBox(height: 15),
+//             TextFormField(
+//               controller: passwordController,
+//               obscureText: true,
+//               decoration: const InputDecoration(labelText: "Password"),
+//             ),
+//             const SizedBox(height: 20),
+//             isLoading
+//                 ? const CircularProgressIndicator()
+//                 : ElevatedButton(
+//                     onPressed: loginUser,
+//                     child: const Text("Login"),
+//                   ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+// }

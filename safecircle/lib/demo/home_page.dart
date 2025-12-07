@@ -1,311 +1,270 @@
-import 'dart:convert';
-import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
+// import 'dart:convert';
+// import 'package:flutter/material.dart';
+// import 'package:safecircle/demo2/api_service.dart';
+// import 'package:shared_preferences/shared_preferences.dart';
+// import 'api_service.dart';
 
-void main() {
-  runApp(MaterialApp(home: HomePage()));
-}
+// // --------------------------------------------------------
+// // HOME PAGE
+// // --------------------------------------------------------
+// class HomePage extends StatelessWidget {
+//   @override
+//   Widget build(BuildContext context) {
+//     return FolderScreen();
+//   }
+// }
 
-// ---------------- Home Page ----------------
-class HomePage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return FolderScreen();
-  }
-}
+// // --------------------------------------------------------
+// // FOLDER SCREEN
+// // --------------------------------------------------------
+// class FolderScreen extends StatefulWidget {
+//   @override
+//   State<FolderScreen> createState() => _FolderScreenState();
+// }
 
-// ---------------- Folder Screen ----------------
-class FolderScreen extends StatefulWidget {
-  @override
-  State<FolderScreen> createState() => _FolderScreenState();
-}
+// class _FolderScreenState extends State<FolderScreen> {
+//   List folders = [];
+//   bool isLoading = true;
 
-class _FolderScreenState extends State<FolderScreen> {
-  List folders = [];
-  String? token, userID;
-  bool isLoading = false;
-  final folderController = TextEditingController();
-  final String baseUrl = "https://wsa-1.onrender.com/api/folder";
+//   final TextEditingController folderController = TextEditingController();
 
-  @override
-  void initState() {
-    super.initState();
-    _loadUserData();
-  }
+//   @override
+//   void initState() {
+//     super.initState();
+//     loadData();
+//   }
 
-  Future<void> _loadUserData() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    token = prefs.getString("token");
-    userID = prefs.getString("userID");
+//   // LOAD TOKEN & FOLDERS
+//   Future<void> loadData() async {
+//     final token = await ApiService.getToken();
 
-    print("DEBUG → TOKEN: $token");
-    print("DEBUG → USER ID: $userID");
+//     if (token == null) {
+//       _showMessage("Token missing. Please login again.");
+//       setState(() => isLoading = false);
+//       return;
+//     }
 
-    if (token != null && userID != null) {
-      _fetchFolders();
-    } else {
-      print("DEBUG → USER NOT LOGGED IN");
-    }
-  }
+//     await fetchFolders();
+//   }
 
-  Future<void> _fetchFolders() async {
-    setState(() => isLoading = true);
-    try {
-      final res = await http.get(
-        Uri.parse("$baseUrl/all"),
-        headers: {"Authorization": "Bearer $token"},
-      );
-      if (res.statusCode == 200) {
-        final data = json.decode(res.body);
-        setState(() {
-          folders =
-              data['folders']?.where((f) => f['userID'] == userID).toList() ??
-              [];
-        });
-      } else {
-        _showMessage("Error fetching folders");
-      }
-    } catch (e) {
-      _showMessage("Network error");
-    } finally {
-      setState(() => isLoading = false);
-    }
-  }
+//   // FETCH USER FOLDERS (JWT)
+//   Future<void> fetchFolders() async {
+//     setState(() => isLoading = true);
 
-  Future<void> _createFolder() async {
-    final name = folderController.text.trim();
-    if (name.isEmpty) return;
+//     final res = await FolderService.getUserFolders();
 
-    setState(() => isLoading = true);
+//     if (res["status"] == 200) {
+//       folders = res["data"]["folders"];
+//     } else {
+//       _showMessage("Failed to load folders");
+//     }
 
-    try {
-      final res = await http.post(
-        Uri.parse("$baseUrl/create"),
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer $token",
-        },
-        body: json.encode({
-          "foldername": name,
-          "userID": userID, // ✅ REQUIRED
-        }),
-      );
+//     setState(() => isLoading = false);
+//   }
 
-      final data = json.decode(res.body);
+//   // CREATE FOLDER (JWT)
+//   Future<void> createFolder() async {
+//     final name = folderController.text.trim();
+//     if (name.isEmpty) {
+//       _showMessage("Folder name required");
+//       return;
+//     }
 
-      if (res.statusCode == 200 && data['success'] == true) {
-        folderController.clear();
-        _fetchFolders(); // refresh list
-        _showMessage("Folder created");
-      } else {
-        _showMessage(data['message'] ?? "Create failed");
-      }
-    } catch (e) {
-      _showMessage("Network error");
-    } finally {
-      setState(() => isLoading = false);
-    }
-  }
+//     final res = await FolderService.createFolder(name);
 
-  void _openFolder(folder) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => ContactScreen(folder: folder, token: token!),
-      ),
-    ).then((_) => _fetchFolders());
-  }
+//     if (res["status"] == 200) {
+//       folderController.clear();
+//       fetchFolders();
+//       _showMessage("Folder created");
+//     } else {
+//       _showMessage("Failed to create folder");
+//     }
+//   }
 
-  void _showMessage(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
-  }
+//   // OPEN CONTACT SCREEN
+//   void openFolder(Map folder) {
+//     Navigator.push(
+//       context,
+//       MaterialPageRoute(builder: (_) => ContactScreen(folder: folder)),
+//     ).then((_) => fetchFolders());
+//   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Folders")),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: folderController,
-                    decoration: const InputDecoration(
-                      hintText: "Folder name",
-                      border: OutlineInputBorder(),
-                    ),
-                    onSubmitted: (_) => _createFolder(),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                ElevatedButton(
-                  onPressed: _createFolder,
-                  child: const Text("Add"),
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : folders.isEmpty
-                ? const Center(child: Text("No folders found"))
-                : ListView.builder(
-                    itemCount: folders.length,
-                    itemBuilder: (_, index) {
-                      final folder = folders[index];
-                      return ListTile(
-                        leading: const Icon(Icons.folder),
-                        title: Text(folder['foldername'] ?? "Unnamed"),
-                        onTap: () => _openFolder(folder),
-                      );
-                    },
-                  ),
-          ),
-        ],
-      ),
-    );
-  }
-}
+//   void _showMessage(String msg) {
+//     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+//   }
 
-// ---------------- Contact Screen ----------------
-class ContactScreen extends StatefulWidget {
-  final Map folder;
-  final String token;
-  const ContactScreen({required this.folder, required this.token});
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(title: Text("Folders")),
+//       body: isLoading
+//           ? Center(child: CircularProgressIndicator())
+//           : Column(
+//               children: [
+//                 Padding(
+//                   padding: EdgeInsets.all(16),
+//                   child: Row(
+//                     children: [
+//                       Expanded(
+//                         child: TextField(
+//                           controller: folderController,
+//                           decoration: InputDecoration(
+//                             hintText: "Folder name",
+//                             border: OutlineInputBorder(),
+//                           ),
+//                         ),
+//                       ),
+//                       SizedBox(width: 10),
+//                       ElevatedButton(
+//                         onPressed: createFolder,
+//                         child: Text("Add"),
+//                       ),
+//                     ],
+//                   ),
+//                 ),
+//                 Expanded(
+//                   child: folders.isEmpty
+//                       ? Center(child: Text("No folders found"))
+//                       : ListView.builder(
+//                           itemCount: folders.length,
+//                           itemBuilder: (_, i) {
+//                             final f = folders[i];
+//                             return ListTile(
+//                               leading: Icon(Icons.folder),
+//                               title: Text(f['foldername']),
+//                               onTap: () => openFolder(f),
+//                             );
+//                           },
+//                         ),
+//                 ),
+//               ],
+//             ),
+//     );
+//   }
+// }
 
-  @override
-  State<ContactScreen> createState() => _ContactScreenState();
-}
+// // --------------------------------------------------------
+// // CONTACT SCREEN
+// // --------------------------------------------------------
+// class ContactScreen extends StatefulWidget {
+//   final Map folder;
 
-class _ContactScreenState extends State<ContactScreen> {
-  List contacts = [];
-  bool isLoading = false;
-  final nameController = TextEditingController();
-  final phoneController = TextEditingController();
-  final String baseUrl = "https://wsa-1.onrender.com/api/contact";
+//   ContactScreen({required this.folder});
 
-  @override
-  void initState() {
-    super.initState();
-    _fetchContacts();
-  }
+//   @override
+//   State<ContactScreen> createState() => _ContactScreenState();
+// }
 
-  Future<void> _fetchContacts() async {
-    setState(() => isLoading = true);
-    try {
-      final res = await http.get(
-        Uri.parse("$baseUrl/${widget.folder['_id']}"),
-        headers: {"Authorization": "Bearer ${widget.token}"},
-      );
-      if (res.statusCode == 200) {
-        final data = json.decode(res.body);
-        setState(() => contacts = data['contacts'] ?? []);
-      } else {
-        _showMessage("Error fetching contacts");
-      }
-    } catch (e) {
-      _showMessage("Network error");
-    } finally {
-      setState(() => isLoading = false);
-    }
-  }
+// class _ContactScreenState extends State<ContactScreen> {
+//   List contacts = [];
+//   bool isLoading = true;
 
-  Future<void> _addContact() async {
-    final name = nameController.text.trim();
-    final phone = phoneController.text.trim();
-    if (name.isEmpty || phone.isEmpty) return;
+//   final TextEditingController nameController = TextEditingController();
+//   final TextEditingController phoneController = TextEditingController();
 
-    setState(() => isLoading = true);
-    try {
-      final res = await http.post(
-        Uri.parse("$baseUrl/create"),
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer ${widget.token}",
-        },
-        body: json.encode({
-          "folderID": widget.folder['_id'],
-          "c_name": name,
-          "c_phone": phone,
-        }),
-      );
-      final data = json.decode(res.body);
-      if (res.statusCode == 200 && data['success'] == true) {
-        nameController.clear();
-        phoneController.clear();
-        _fetchContacts();
-        _showMessage("Contact added");
-      } else {
-        _showMessage(data['message'] ?? "Add failed");
-      }
-    } catch (e) {
-      _showMessage("Network error");
-    } finally {
-      setState(() => isLoading = false);
-    }
-  }
+//   @override
+//   void initState() {
+//     super.initState();
+//     fetchContacts();
+//   }
 
-  void _showMessage(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
-  }
+//   // GET CONTACTS INSIDE A FOLDER
+//   Future<void> fetchContacts() async {
+//     setState(() => isLoading = true);
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text("Contacts in ${widget.folder['foldername']}")),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                TextField(
-                  controller: nameController,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    hintText: "Name",
-                  ),
-                ),
-                const SizedBox(height: 10),
-                TextField(
-                  controller: phoneController,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    hintText: "Phone",
-                  ),
-                ),
-                const SizedBox(height: 10),
-                ElevatedButton(
-                  onPressed: _addContact,
-                  child: const Text("Add Contact"),
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : contacts.isEmpty
-                ? const Center(child: Text("No contacts found"))
-                : ListView.builder(
-                    itemCount: contacts.length,
-                    itemBuilder: (_, i) {
-                      final c = contacts[i];
-                      return ListTile(
-                        leading: const Icon(Icons.person),
-                        title: Text(c['c_name'] ?? ""),
-                        subtitle: Text(c['c_phone'] ?? ""),
-                      );
-                    },
-                  ),
-          ),
-        ],
-      ),
-    );
-  }
-}
+//     final res = await FolderService.getFolderContacts(widget.folder['_id']);
+
+//     if (res["status"] == 200) {
+//       contacts = res["data"]["contacts"];
+//     } else {
+//       _showMessage("Failed to load contacts");
+//     }
+
+//     setState(() => isLoading = false);
+//   }
+
+//   // ADD CONTACT TO FOLDER (JWT)
+//   Future<void> addContact() async {
+//     final name = nameController.text.trim();
+//     final phone = phoneController.text.trim();
+
+//     if (name.isEmpty || phone.isEmpty) {
+//       _showMessage("Fill all fields");
+//       return;
+//     }
+
+//     final res = await FolderService.addContact(
+//       widget.folder['_id'],
+//       name,
+//       phone,
+//     );
+
+//     if (res["status"] == 200) {
+//       nameController.clear();
+//       phoneController.clear();
+//       fetchContacts();
+//       _showMessage("Contact added");
+//     } else {
+//       _showMessage("Failed to add contact");
+//     }
+//   }
+
+//   void _showMessage(String msg) {
+//     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(title: Text("Contacts in ${widget.folder['foldername']}")),
+//       body: isLoading
+//           ? Center(child: CircularProgressIndicator())
+//           : Column(
+//               children: [
+//                 Padding(
+//                   padding: EdgeInsets.all(16),
+//                   child: Column(
+//                     children: [
+//                       TextField(
+//                         controller: nameController,
+//                         decoration: InputDecoration(
+//                           border: OutlineInputBorder(),
+//                           hintText: "Name",
+//                         ),
+//                       ),
+//                       SizedBox(height: 10),
+//                       TextField(
+//                         controller: phoneController,
+//                         decoration: InputDecoration(
+//                           border: OutlineInputBorder(),
+//                           hintText: "Phone",
+//                         ),
+//                       ),
+//                       SizedBox(height: 10),
+//                       ElevatedButton(
+//                         onPressed: addContact,
+//                         child: Text("Add Contact"),
+//                       ),
+//                     ],
+//                   ),
+//                 ),
+//                 Expanded(
+//                   child: contacts.isEmpty
+//                       ? Center(child: Text("No contacts found"))
+//                       : ListView.builder(
+//                           itemCount: contacts.length,
+//                           itemBuilder: (_, i) {
+//                             final c = contacts[i];
+//                             return ListTile(
+//                               leading: Icon(Icons.person),
+//                               title: Text(c['c_name']),
+//                               subtitle: Text(c['c_phone']),
+//                             );
+//                           },
+//                         ),
+//                 ),
+//               ],
+//             ),
+//     );
+//   }
+// }

@@ -49,7 +49,7 @@
 //       isLoading = true;
 //     });
 //     try {
-//       final response = await http.get(Uri.parse("$baseUrl/all"));
+//       final response = await http.get(Uri.parse("$baseUrl/all/$userID"));
 //       if (response.statusCode == 200) {
 //         final data = json.decode(response.body);
 //         setState(() {
@@ -176,7 +176,7 @@
 //   }
 
 //   Future<void> _deleteSelectedFolders() async {
-//     final url = Uri.parse("$baseUrl/delete");
+//     final url = Uri.parse("$baseUrl/delete/$folderId/$userID");
 //     try {
 //       final response = await http.delete(
 //         url,
@@ -359,7 +359,7 @@
 //     });
 //     final folderID = widget.folder['_id'];
 //     try {
-//       final response = await http.get(Uri.parse("$baseUrl/$folderID"));
+//       final response = await http.get(Uri.parse("$baseUrl/$folderID/$userID"));
 //       if (response.statusCode == 200) {
 //         final data = json.decode(response.body);
 //         setState(() {
