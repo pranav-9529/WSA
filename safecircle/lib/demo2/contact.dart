@@ -20,7 +20,7 @@ class _ContactScreenState extends State<ContactScreen> {
 
   String? userID;
 
-  // NEW: Track selected contacts for delete
+  // Track selected contacts
   List<String> selectedContacts = [];
   bool selectionMode = false;
 
@@ -61,7 +61,7 @@ class _ContactScreenState extends State<ContactScreen> {
       setState(() {
         contacts = res["contacts"] ?? [];
         selectedContacts.clear();
-        selectionMode = false; // Reset selection when refreshing
+        selectionMode = false;
       });
     } catch (e) {
       ScaffoldMessenger.of(
@@ -114,19 +114,20 @@ class _ContactScreenState extends State<ContactScreen> {
 
     try {
       final res = await ApiService2.deleteMultipleContacts(
+        userID: userID!,
         folderID: widget.folder["id"],
         contactIDs: selectedContacts,
-        userID: userID!,
       );
 
       if (res["success"] == true) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Contacts deleted successfully")),
         );
+
         _fetchContacts();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(res["message"] ?? "Deletion failed")),
+          SnackBar(content: Text(res["message"] ?? "Failed to delete")),
         );
       }
     } catch (e) {
@@ -193,7 +194,11 @@ class _ContactScreenState extends State<ContactScreen> {
                     itemCount: contacts.length,
                     itemBuilder: (context, index) {
                       final c = contacts[index];
-                      final id = c["_id"];
+
+                      // Normalize ID
+                      final rawId = c["_id"] ?? c["id"];
+                      final id = rawId?.toString() ?? "";
+                      if (id.isEmpty) return const SizedBox.shrink();
 
                       final isSelected = selectedContacts.contains(id);
 

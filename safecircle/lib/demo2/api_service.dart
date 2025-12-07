@@ -198,40 +198,23 @@ class ApiService2 {
     return _processResponse(response);
   }
 
-  // DELETE MULTIPLE CONTACTS
+  // ---------------- DELETE MULTIPLE CONTACTS ----------------
   static Future<Map<String, dynamic>> deleteMultipleContacts({
+    required String userID,
     required String folderID,
     required List<String> contactIDs,
-    required String userID,
   }) async {
-    final url = "$baseUrl/contacts/delete-multiple/$userID/$folderID";
+    final url = Uri.parse("$baseUrl/contact/delete-multiple/$userID/$folderID");
 
-    final body = jsonEncode({"contactIDs": contactIDs});
-
-    final res = await http.delete(
-      Uri.parse(url),
+    final res = await http.post(
+      url,
       headers: {"Content-Type": "application/json"},
-      body: body,
+      body: jsonEncode({"contactIDs": contactIDs}),
     );
+
+    print("Delete multiple contacts: ${res.statusCode} | ${res.body}");
 
     return jsonDecode(res.body);
-  }
-
-  // ---------------------- SEARCH CONTACT ----------------------
-  static Future<Map<String, dynamic>> searchContact({
-    required String query,
-  }) async {
-    final token = await getToken() ?? "";
-
-    final response = await http.get(
-      Uri.parse("$baseUrl/contact/search?query=$query"),
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer $token",
-      },
-    );
-
-    return _processResponse(response);
   }
 
   // ---------------------- HELPER: PROCESS RESPONSE ----------------------

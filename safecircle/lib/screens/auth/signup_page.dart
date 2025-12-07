@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:safecircle/demo/F_C_page.dart';
 import 'package:safecircle/demo/home_page.dart';
 import 'package:safecircle/demo2/folder.dart';
-import 'api_service.dart';
-import 'home_page.dart';
+import '../../demo2/api_service.dart';
+import '../../demo2/home_page.dart';
 
 class SignupPage extends StatefulWidget {
   @override
