@@ -67,7 +67,7 @@ class _FolderScreenState extends State<FolderScreen> {
     }
   }
 
-  // ---------------------- CREATE FOLDER WITH USER ID ----------------------
+  // ---------------------- CREATE FOLDER ----------------------
   Future<void> _createFolder() async {
     final name = folderController.text.trim();
     if (name.isEmpty) {
@@ -86,8 +86,8 @@ class _FolderScreenState extends State<FolderScreen> {
 
     try {
       final res = await ApiService2.addFolder(
-        folderName: name,
         userID: userID!,
+        folderName: name,
       );
 
       print("Create Folder Response: $res");
@@ -97,7 +97,7 @@ class _FolderScreenState extends State<FolderScreen> {
         _fetchFolders();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Failed to create folder")),
+          SnackBar(content: Text(res["message"] ?? "Failed to create folder")),
         );
       }
     } catch (e) {
@@ -105,6 +105,59 @@ class _FolderScreenState extends State<FolderScreen> {
         context,
       ).showSnackBar(SnackBar(content: Text("Network error: $e")));
     }
+  }
+
+  // ---------------------- DELETE FOLDER ----------------------
+  Future<void> _deleteFolder(String folderID) async {
+    try {
+      final res = await ApiService2.deleteFolder(
+        folderID: folderID,
+        userID: userID!,
+      );
+
+      if (res["success"] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Folder deleted successfully")),
+        );
+        _fetchFolders();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(res["message"] ?? "Failed to delete folder")),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error: $e")));
+    }
+  }
+
+  // ---------------------- CONFIRM DELETE DIALOG ----------------------
+  void _confirmDelete(String folderID) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Delete Folder?"),
+          content: const Text(
+            "This will remove the folder and all contacts inside it.",
+          ),
+          actions: [
+            TextButton(
+              child: const Text("Cancel"),
+              onPressed: () => Navigator.pop(context),
+            ),
+            TextButton(
+              child: const Text("Delete", style: TextStyle(color: Colors.red)),
+              onPressed: () {
+                Navigator.pop(context);
+                _deleteFolder(folderID);
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   // ---------------------- OPEN FOLDER ----------------------
@@ -122,7 +175,6 @@ class _FolderScreenState extends State<FolderScreen> {
       appBar: AppBar(title: const Text("Your Folders")),
       body: Column(
         children: [
-          // ----------- Add Folder -----------
           Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
@@ -146,7 +198,6 @@ class _FolderScreenState extends State<FolderScreen> {
             ),
           ),
 
-          // ----------- Folder List -----------
           Expanded(
             child: isLoading
                 ? const Center(child: CircularProgressIndicator())
@@ -157,7 +208,6 @@ class _FolderScreenState extends State<FolderScreen> {
                     itemBuilder: (context, index) {
                       final f = folders[index];
 
-                      // Normalize response
                       final folder = {
                         "id": f["_id"] ?? f["id"],
                         "folderName":
@@ -168,6 +218,11 @@ class _FolderScreenState extends State<FolderScreen> {
                         leading: const Icon(Icons.folder),
                         title: Text(folder["folderName"]),
                         onTap: () => _openFolder(folder),
+
+                        // ⭐ Long press to delete
+                        onLongPress: () {
+                          _confirmDelete(folder["id"]);
+                        },
                       );
                     },
                   ),

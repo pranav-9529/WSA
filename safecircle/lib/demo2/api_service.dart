@@ -107,28 +107,22 @@ class ApiService2 {
 
   // ---------------------- ADD FOLDER ----------------------
   static Future<Map<String, dynamic>> addFolder({
-    required String folderName,
     required String userID,
+    required String folderName,
   }) async {
-    final token = await getToken() ?? "";
+    final url = Uri.parse("$baseUrl/folder/create/$userID");
 
-    final response = await http.post(
-      Uri.parse("$baseUrl/folder/create"),
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer $token",
-      },
-      body: jsonEncode({
-        "folderName": folderName,
-        "userID": userID, // <- important lowercase 'd'
-      }),
+    final body = {"foldername": folderName};
+
+    final res = await http.post(
+      url,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode(body),
     );
 
-    print(
-      "Folder creation response: ${response.statusCode} | ${response.body}",
-    );
+    print("Create Folder Status: ${res.statusCode} | Body: ${res.body}");
 
-    return _processResponse(response);
+    return jsonDecode(res.body);
   }
 
   // ---------------------- GET ALL FOLDERS ----------------------
@@ -136,7 +130,7 @@ class ApiService2 {
     final token = await getToken() ?? "";
 
     final response = await http.get(
-      Uri.parse("$baseUrl/folder/all/$userID"),
+      Uri.parse("$baseUrl/folder/$userID"),
       headers: {
         "Content-Type": "application/json",
         "Authorization": "Bearer $token",
@@ -151,17 +145,13 @@ class ApiService2 {
     required String folderID,
     required String userID,
   }) async {
-    final token = await getToken() ?? "";
+    final url = Uri.parse("$baseUrl/folder/delete/$folderID/$userID");
 
-    final response = await http.delete(
-      Uri.parse("$baseUrl/folder/delete/$folderID/$userID"),
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer $token",
-      },
-    );
+    final res = await http.delete(url);
 
-    return _processResponse(response);
+    print("Delete Folder Status: ${res.statusCode} | ${res.body}");
+
+    return jsonDecode(res.body);
   }
 
   // ---------------------- ADD CONTACT ----------------------
@@ -208,22 +198,23 @@ class ApiService2 {
     return _processResponse(response);
   }
 
-  // ---------------------- DELETE MULTIPLE CONTACTS ----------------------
+  // DELETE MULTIPLE CONTACTS
   static Future<Map<String, dynamic>> deleteMultipleContacts({
+    required String folderID,
     required List<String> contactIDs,
+    required String userID,
   }) async {
-    final token = await getToken() ?? "";
+    final url = "$baseUrl/contacts/delete-multiple/$userID/$folderID";
 
-    final response = await http.post(
-      Uri.parse("$baseUrl/contact/delete-multiple"),
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer $token",
-      },
-      body: jsonEncode({"contactIDs": contactIDs}),
+    final body = jsonEncode({"contactIDs": contactIDs});
+
+    final res = await http.delete(
+      Uri.parse(url),
+      headers: {"Content-Type": "application/json"},
+      body: body,
     );
 
-    return _processResponse(response);
+    return jsonDecode(res.body);
   }
 
   // ---------------------- SEARCH CONTACT ----------------------

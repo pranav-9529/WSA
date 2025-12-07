@@ -14,10 +14,15 @@ class ContactScreen extends StatefulWidget {
 class _ContactScreenState extends State<ContactScreen> {
   List<dynamic> contacts = [];
   bool isLoading = true;
+
   final TextEditingController nameCtrl = TextEditingController();
   final TextEditingController phoneCtrl = TextEditingController();
 
   String? userID;
+
+  // NEW: Track selected contacts for delete
+  List<String> selectedContacts = [];
+  bool selectionMode = false;
 
   @override
   void initState() {
@@ -55,6 +60,8 @@ class _ContactScreenState extends State<ContactScreen> {
 
       setState(() {
         contacts = res["contacts"] ?? [];
+        selectedContacts.clear();
+        selectionMode = false; // Reset selection when refreshing
       });
     } catch (e) {
       ScaffoldMessenger.of(
@@ -77,13 +84,6 @@ class _ContactScreenState extends State<ContactScreen> {
       return;
     }
 
-    if (userID == null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("User ID missing")));
-      return;
-    }
-
     try {
       final res = await ApiService2.addContact(
         folderID: widget.folder["id"],
@@ -96,9 +96,6 @@ class _ContactScreenState extends State<ContactScreen> {
         nameCtrl.clear();
         phoneCtrl.clear();
         _fetchContacts();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Contact added successfully")),
-        );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(res["message"] ?? "Failed to add contact")),
@@ -111,10 +108,48 @@ class _ContactScreenState extends State<ContactScreen> {
     }
   }
 
+  // ---------------------- DELETE MULTIPLE CONTACTS ----------------------
+  Future<void> _deleteSelectedContacts() async {
+    if (selectedContacts.isEmpty) return;
+
+    try {
+      final res = await ApiService2.deleteMultipleContacts(
+        folderID: widget.folder["id"],
+        contactIDs: selectedContacts,
+        userID: userID!,
+      );
+
+      if (res["success"] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Contacts deleted successfully")),
+        );
+        _fetchContacts();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(res["message"] ?? "Deletion failed")),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error deleting contacts: $e")));
+    }
+  }
+
+  // ---------------------- UI ----------------------
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.folder["folderName"])),
+      appBar: AppBar(
+        title: Text(widget.folder["folderName"]),
+        actions: [
+          if (selectionMode)
+            IconButton(
+              icon: const Icon(Icons.delete),
+              onPressed: _deleteSelectedContacts,
+            ),
+        ],
+      ),
 
       body: Column(
         children: [
@@ -158,12 +193,56 @@ class _ContactScreenState extends State<ContactScreen> {
                     itemCount: contacts.length,
                     itemBuilder: (context, index) {
                       final c = contacts[index];
+                      final id = c["_id"];
+
+                      final isSelected = selectedContacts.contains(id);
+
                       return ListTile(
-                        leading: const Icon(Icons.person),
+                        leading: selectionMode
+                            ? Checkbox(
+                                value: isSelected,
+                                onChanged: (val) {
+                                  setState(() {
+                                    if (val == true) {
+                                      selectedContacts.add(id);
+                                    } else {
+                                      selectedContacts.remove(id);
+                                    }
+
+                                    if (selectedContacts.isEmpty) {
+                                      selectionMode = false;
+                                    }
+                                  });
+                                },
+                              )
+                            : const Icon(Icons.person),
+
                         title: Text(c["name"] ?? c["c_name"] ?? "Unnamed"),
                         subtitle: Text(
                           c["phone"] ?? c["c_phone"] ?? "No number",
                         ),
+
+                        onLongPress: () {
+                          setState(() {
+                            selectionMode = true;
+                            selectedContacts.add(id);
+                          });
+                        },
+
+                        onTap: () {
+                          if (selectionMode) {
+                            setState(() {
+                              if (isSelected) {
+                                selectedContacts.remove(id);
+                                if (selectedContacts.isEmpty) {
+                                  selectionMode = false;
+                                }
+                              } else {
+                                selectedContacts.add(id);
+                              }
+                            });
+                          }
+                        },
                       );
                     },
                   ),
