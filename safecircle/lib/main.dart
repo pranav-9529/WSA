@@ -1,12 +1,16 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:safecircle/demo2/YTvideo.dart';
+import 'package:safecircle/demo2/videomodel.dart';
+import 'package:safecircle/demo2/videoplayscreen.dart';
 import 'package:safecircle/demo2/videoscreen.dart';
 import 'package:safecircle/screens/folder.dart';
 import 'package:safecircle/screens/auth/login_page.dart';
 import 'package:safecircle/screens/auth/signup_page.dart';
 import 'package:safecircle/screens/map/map.dart';
 import 'package:safecircle/screens/onbording/onbording.dart';
+import 'package:video_player/video_player.dart';
 
 void main() {
   runApp(const MyApp());
@@ -77,7 +81,44 @@ class FirstPage extends StatelessWidget {
                     SizedBox(height: 10),
                     button1(name: "folder screen", pagename: FolderScreen()),
                     SizedBox(height: 10),
-                    button1(name: "video screen", pagename: VideoScreen()),
+                    // button1(
+                    //   name: "video screen",
+                    //   pagename: YouTubeVideoScreen(),
+                    // ),
+                    SizedBox(height: 20),
+                    // ElevatedButton(
+                    //   onPressed: () {
+                    //     Navigator.push(
+                    //       context,
+                    //       MaterialPageRoute(
+                    //         builder: (context) => YouTubeVideoScreen(
+                    //           videoUrl:
+                    //               "https://youtu.be/Y-PhwJSv5HI?si=BZb3zXMBq0JDD7e-",
+                    //         ),
+                    //       ),
+                    //     );
+                    //   },
+                    //   child: Text("Youtube Video"),
+                    // ),
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => YouTubeVideoListScreen(),
+                          ),
+                        );
+                      },
+                      icon: Icon(Icons.video_library),
+                      label: Text("Watch Safety Videos"),
+                      style: ElevatedButton.styleFrom(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 15,
+                        ),
+                        textStyle: TextStyle(fontSize: 18),
+                      ),
+                    ),
                   ],
                 ),
               ),
