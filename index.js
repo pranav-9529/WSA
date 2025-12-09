@@ -25,6 +25,9 @@ app.use("/api/folder", folderRoutes);
 const contactRoutes = require("./routes/contactRoutes");
 app.use("/api/contact", contactRoutes);
 
+const videoRoutes = require("./routes/videoRoutes");
+app.use("/api", videoRoutes);
+
 // Root endpoint
 app.get("/", (req, res) => {
     res.send("WSA backend server is live!");
