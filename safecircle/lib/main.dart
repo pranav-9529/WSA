@@ -1,15 +1,10 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:safecircle/demo/F_C_page.dart';
-import 'package:safecircle/demo/home_page.dart';
-import 'package:safecircle/demo/login_page.dart';
-import 'package:safecircle/demo/signup_page.dart';
-import 'package:safecircle/demo2/folder.dart';
-import 'package:safecircle/demo2/home_page.dart';
+import 'package:safecircle/demo2/videoscreen.dart';
+import 'package:safecircle/screens/folder.dart';
 import 'package:safecircle/screens/auth/login_page.dart';
 import 'package:safecircle/screens/auth/signup_page.dart';
-import 'package:safecircle/screens/auth/login_page.dart';
 import 'package:safecircle/screens/map/map.dart';
 import 'package:safecircle/screens/onbording/onbording.dart';
 
@@ -80,7 +75,9 @@ class FirstPage extends StatelessWidget {
                       pagename: MapPage(lat: 20.51, lon: 75.15),
                     ),
                     SizedBox(height: 10),
-                    button1(name: "Home page demo", pagename: FolderScreen()),
+                    button1(name: "folder screen", pagename: FolderScreen()),
+                    SizedBox(height: 10),
+                    button1(name: "video screen", pagename: VideoScreen()),
                   ],
                 ),
               ),

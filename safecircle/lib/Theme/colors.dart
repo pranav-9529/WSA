@@ -19,7 +19,8 @@ class AppColors {
   static const Color warning = Color(0xFFFFC107);
   static const Color info = Color(0xFF2196F3);
 
-  static const Color button = Color(0xFFF3A3BE);
+  static const Color button = Color.fromARGB(193, 243, 163, 190);
+  static const Color redbutton = Color(0xFFC2144E);
   static const Color buttonText1 = Color(0xFFFFFFFF);
   static const Color buttonText2 = Color(0xFF000000);
 
@@ -29,13 +30,15 @@ class AppColors {
   // Dark theme example
   static Color darkBackgroundColor = Colors.black;
   static Color darkTextColor = Colors.white;
+
+  static Color loder = const Color(0xFFC2144E);
 }
 
 // Dynamic Fonts
 class AppTextStyles {
   static TextStyle heading = GoogleFonts.poppins(
     fontSize: 22,
-    fontWeight: FontWeight.w400,
+    fontWeight: FontWeight.bold,
     color: AppColors.textColor,
   );
 
@@ -54,5 +57,30 @@ class AppTextStyles {
     fontSize: 12,
     fontWeight: FontWeight.normal,
     color: AppColors.textColor,
+  );
+  static TextStyle button1 = GoogleFonts.roboto(
+    fontSize: 16,
+    fontWeight: FontWeight.normal,
+    color: Colors.white,
+  );
+  static TextStyle button2 = GoogleFonts.roboto(
+    fontSize: 16,
+    fontWeight: FontWeight.normal,
+    color: Colors.black,
+  );
+  static TextStyle redbutton = GoogleFonts.roboto(
+    fontSize: 16,
+    fontWeight: FontWeight.normal,
+    color: AppColors.redbutton,
+  );
+  static TextStyle cardtext1 = GoogleFonts.roboto(
+    fontSize: 16,
+    fontWeight: FontWeight.normal,
+    color: const Color(0xFF8B8B8B),
+  );
+  static TextStyle cardtext2 = GoogleFonts.roboto(
+    fontSize: 16,
+    fontWeight: FontWeight.normal,
+    color: const Color(0xFF8B8B8B),
   );
 }

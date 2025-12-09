@@ -45,44 +45,65 @@ class ApiService {
     return {"status": response.statusCode, "data": data};
   }
 
-  // ---------------------- SIGNUP ----------------------
+  //
+
+  // -------- SIGNUP --------
   static Future<Map<String, dynamic>> signup({
-    required String name,
+    required String fname,
+    required String lname,
     required String email,
+    required String phone,
     required String password,
   }) async {
     final url = Uri.parse("$baseUrl/signup");
 
-    final response = await http.post(
+    final res = await http.post(
       url,
       headers: {"Content-Type": "application/json"},
-      body: jsonEncode({"name": name, "email": email, "password": password}),
+      body: jsonEncode({
+        "fname": fname,
+        "lname": lname,
+        "email": email,
+        "phone": phone,
+        "password": password,
+      }),
     );
 
-    final data = jsonDecode(response.body);
+    print("SIGNUP RAW RESPONSE => ${res.body}");
 
-    if (response.statusCode == 200) {
-      await saveToken(data["token"]);
-    }
+    final data = jsonDecode(res.body);
 
-    return {"status": response.statusCode, "data": data};
+    // ⭐ IMPORTANT FIXES ⭐
+    // backend may return 200 or 201
+    int status = res.statusCode;
+
+    // backend may send token directly or inside data
+    String? token = data["token"] ?? data["data"]?["token"];
+    String? userID = data["userID"] ?? data["data"]?["userID"];
+
+    return {"status": status, "data": data, "token": token, "userID": userID};
   }
 
-  // ---------------------- GET USER DETAIL (JWT) ----------------------
-  static Future<Map<String, dynamic>> getUserData() async {
-    final token = await getToken();
+  // -------- SAVE TOKEN & USERID --------
+  static Future<void> saveToken1(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString("token", token);
+  }
 
-    final url = Uri.parse("$baseUrl/user/me");
+  static Future<void> saveUserID1(String userID) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString("userID", userID);
+  }
 
-    final response = await http.get(
-      url,
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer $token",
-      },
-    );
+  // -------- GET TOKEN & USERID --------
+  static Future<String?> getToken1() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString("token");
+  }
 
-    return {"status": response.statusCode, "data": jsonDecode(response.body)};
+  static Future<String?> getUserID() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString("userID");
   }
 }
 

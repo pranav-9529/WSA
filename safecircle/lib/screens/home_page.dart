@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:safecircle/demo2/folder.dart';
+import 'package:safecircle/screens/folder.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -32,7 +32,7 @@ class HomePage extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
-                  color: Colors.blue.shade50,
+                  color: const Color.fromARGB(161, 255, 163, 229),
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
@@ -44,7 +44,11 @@ class HomePage extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.folder, size: 40, color: Colors.blue),
+                    const Icon(
+                      Icons.folder,
+                      size: 40,
+                      color: Color.fromARGB(255, 231, 15, 195),
+                    ),
 
                     const SizedBox(width: 15),
 
