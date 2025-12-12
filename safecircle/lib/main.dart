@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:safecircle/demo2/YTvideo.dart';
+import 'package:safecircle/demo2/assetvideo.dart';
 import 'package:safecircle/demo2/videomodel.dart';
 import 'package:safecircle/demo2/videoplayscreen.dart';
 import 'package:safecircle/demo2/videoscreen.dart';
@@ -9,6 +10,8 @@ import 'package:safecircle/screens/folder.dart';
 import 'package:safecircle/screens/auth/login_page.dart';
 import 'package:safecircle/screens/auth/signup_page.dart';
 import 'package:safecircle/screens/map/map.dart';
+import 'package:safecircle/screens/map/map1.dart';
+import 'package:safecircle/screens/map/map_page.dart';
 import 'package:safecircle/screens/onbording/onbording.dart';
 import 'package:video_player/video_player.dart';
 
@@ -74,49 +77,53 @@ class FirstPage extends StatelessWidget {
                       pagename: ImageCarouselScreen(),
                     ),
                     SizedBox(height: 10),
-                    button1(
-                      name: "Map page",
-                      pagename: MapPage(lat: 20.51, lon: 75.15),
-                    ),
+                    // button1(
+                    //   name: "Map page",
+                    //   pagename: MapPage(lat: 20.51, lon: 75.15),
+                    // ),
                     SizedBox(height: 10),
                     button1(name: "folder screen", pagename: FolderScreen()),
                     SizedBox(height: 10),
-                    // button1(
-                    //   name: "video screen",
-                    //   pagename: YouTubeVideoScreen(),
-                    // ),
+                    button1(name: "video screen", pagename: VideoScreen()),
                     SizedBox(height: 20),
-                    // ElevatedButton(
-                    //   onPressed: () {
-                    //     Navigator.push(
-                    //       context,
-                    //       MaterialPageRoute(
-                    //         builder: (context) => YouTubeVideoScreen(
-                    //           videoUrl:
-                    //               "https://youtu.be/Y-PhwJSv5HI?si=BZb3zXMBq0JDD7e-",
-                    //         ),
-                    //       ),
-                    //     );
-                    //   },
-                    //   child: Text("Youtube Video"),
-                    // ),
-                    ElevatedButton.icon(
+                    ElevatedButton(
                       onPressed: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => YouTubeVideoListScreen(),
+                            builder: (_) => AssetVideoScreen(
+                              assetPath: "videos/video1.mp4",
+                            ),
                           ),
                         );
                       },
-                      icon: Icon(Icons.video_library),
-                      label: Text("Watch Safety Videos"),
+                      child: Text("Play Safety Video"),
+                    ),
+                    SizedBox(height: 10),
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const MapPage(),
+                          ),
+                        );
+                      },
                       style: ElevatedButton.styleFrom(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 15,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 14,
                         ),
-                        textStyle: TextStyle(fontSize: 18),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        "Open Map",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ],

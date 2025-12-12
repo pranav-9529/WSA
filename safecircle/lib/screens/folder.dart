@@ -207,7 +207,7 @@ class _FolderScreenState extends State<FolderScreen> {
                     controller: folderController,
                     decoration: InputDecoration(
                       labelText: "Enter folder name",
-                      icon: Icon(Icons.folder, color: AppColors.primary),
+                      icon: Icon(Icons.folder, color: const Color(0xFFC2144E)),
                       labelStyle: TextStyle(
                         color: const Color.fromARGB(138, 0, 0, 0),
                       ),
