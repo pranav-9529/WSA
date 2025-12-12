@@ -25,8 +25,8 @@ app.use("/api/folder", folderRoutes);
 const contactRoutes = require("./routes/contactRoutes");
 app.use("/api/contact", contactRoutes);
 
-const videoRoutes = require("./routes/videoRoutes");
-app.use("/api/video", videoRoutes);
+// const videoRoutes = require("./routes/videoRoutes");
+// app.use("/api/video", videoRoutes);
 
 const recordingRoutes = require('./routes/recordingsRoutes');
  app.use('/api/recordings', recordingRoutes);
