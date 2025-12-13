@@ -1,19 +1,18 @@
 const mongoose = require('mongoose');
 
-const RecordingSchema = new mongoose.Schema({
-  userId: { 
-    type: mongoose.Schema.Types.ObjectId, 
-    ref: 'User', 
-    required: true 
+const recordingSchema = new mongoose.Schema({
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
   },
-  originalName: { type: String },
-  filePath: { type: String, required: true },
-  mimeType: { type: String },
-  size: { type: Number },
-  createdAt: { type: Date, default: Date.now },
-  // Share features
-  shareToken: { type: String, index: true, sparse: true },
-  shareExpiresAt: { type: Date, default: null }
-});
+  originalName: String,
+  filePath: String,
+  mimeType: String,
+  size: Number,
 
-module.exports = mongoose.model('Recording', RecordingSchema);
+  shareToken: String,
+  shareExpiresAt: Date
+}, { timestamps: true });
+
+module.exports = mongoose.model('Recording', recordingSchema);
