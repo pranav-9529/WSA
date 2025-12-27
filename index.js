@@ -16,20 +16,11 @@ connectDB();
 // Routes
 app.use("/api/auth", require("./routes/authRoutes"));
 
-const emailOtpRoutes = require("./routes/otpRoutes");
-app.use("/api/otp", emailOtpRoutes);
-
 const folderRoutes = require("./routes/folderRoutes");
 app.use("/api/folder", folderRoutes);
 
 const contactRoutes = require("./routes/contactRoutes");
 app.use("/api/contact", contactRoutes);
-
-// const videoRoutes = require("./routes/videoRoutes");
-// app.use("/api/video", videoRoutes);
-
-const recordingRoutes = require('./routes/recordingsRoutes');
- app.use('/api/recordings', recordingRoutes);
 
 
 // Root endpoint
