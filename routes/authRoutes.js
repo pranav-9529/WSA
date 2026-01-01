@@ -68,6 +68,48 @@ router.post("/verify-email", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+// -------------------------------------
+// Resend OIP
+// -------------------------------------
+router.post("/resend-otp", async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ message: "Email is required" });
+  }
+
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (user.isVerified) {
+      return res.status(409).json({ message: "User already verified" });
+    }
+
+    // Prevent OTP spam
+    if (user.otpExpires && user.otpExpires > Date.now()) {
+      return res.status(429).json({
+        message: "OTP already sent. Please wait before requesting again"
+      });
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    user.otp = otp;
+    user.otpExpires = Date.now() + 5 * 60 * 1000; // 5 min
+    await user.save();
+
+    await sendOtpMail(email, otp);
+
+    res.status(200).json({ message: "OTP resent successfully" });
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // -------------------------------------
 // LOGIN
