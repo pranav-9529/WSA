@@ -52,79 +52,79 @@ router.post("/signup", async (req, res) => {
   }
 });
 
-// -------------------------------------
-// VERIFY EMAIL OTP
-// -------------------------------------
-router.post("/verify-email", async (req, res) => {
-  const { email, otp } = req.body;
+// // -------------------------------------
+// // VERIFY EMAIL OTP
+// // -------------------------------------
+// router.post("/verify-email", async (req, res) => {
+//   const { email, otp } = req.body;
 
-  try {
-    const user = await User.findOne({ email });
+//   try {
+//     const user = await User.findOne({ email });
 
-    if (!user) return res.status(404).json({ message: "User not found" });
-    if (user.isVerified)
-      return res.status(400).json({ message: "Email already verified" });
+//     if (!user) return res.status(404).json({ message: "User not found" });
+//     if (user.isVerified)
+//       return res.status(400).json({ message: "Email already verified" });
 
-    // ✅ compare hashed OTP
-    const isOtpValid = await bcrypt.compare(otp, user.otp);
+//     // ✅ compare hashed OTP
+//     const isOtpValid = await bcrypt.compare(otp, user.otp);
 
-    if (!isOtpValid || user.otpExpires < Date.now()) {
-      return res.status(400).json({ message: "Invalid or expired OTP" });
-    }
+//     if (!isOtpValid || user.otpExpires < Date.now()) {
+//       return res.status(400).json({ message: "Invalid or expired OTP" });
+//     }
 
-    user.isVerified = true;
-    user.otp = null;
-    user.otpExpires = null;
-    await user.save();
-    console.log("EMAIL RECEIVED 👉", req.body.email);
+//     user.isVerified = true;
+//     user.otp = null;
+//     user.otpExpires = null;
+//     await user.save();
+//     console.log("EMAIL RECEIVED 👉", req.body.email);
 
 
-    res.status(200).json({ message: "Email verified successfully" });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
+//     res.status(200).json({ message: "Email verified successfully" });
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
+//   }
+// });
 
-// -------------------------------------
-// RESEND OTP
-// -------------------------------------
-router.post("/resend-otp", async (req, res) => {
-  const { email } = req.body;
+// // -------------------------------------
+// // RESEND OTP
+// // -------------------------------------
+// router.post("/resend-otp", async (req, res) => {
+//   const { email } = req.body;
 
-  if (!email) {
-    return res.status(400).json({ message: "Email is required" });
-  }
+//   if (!email) {
+//     return res.status(400).json({ message: "Email is required" });
+//   }
 
-  try {
-    const user = await User.findOne({ email });
+//   try {
+//     const user = await User.findOne({ email });
 
-    if (!user) return res.status(404).json({ message: "User not found" });
+//     if (!user) return res.status(404).json({ message: "User not found" });
 
-    if (user.isVerified) {
-      return res.status(409).json({ message: "User already verified" });
-    }
+//     if (user.isVerified) {
+//       return res.status(409).json({ message: "User already verified" });
+//     }
 
-    // Prevent OTP spam
-    if (user.otpExpires && user.otpExpires > Date.now()) {
-      return res.status(429).json({
-        message: "OTP already sent. Please wait before requesting again",
-      });
-    }
+//     // Prevent OTP spam
+//     if (user.otpExpires && user.otpExpires > Date.now()) {
+//       return res.status(429).json({
+//         message: "OTP already sent. Please wait before requesting again",
+//       });
+//     }
 
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const hashedOtp = await bcrypt.hash(otp, 10); // ✅ hash OTP
+//     const otp = Math.floor(100000 + Math.random() * 900000).toString();
+//     const hashedOtp = await bcrypt.hash(otp, 10); // ✅ hash OTP
 
-    user.otp = hashedOtp;
-    user.otpExpires = Date.now() + 5 * 60 * 1000; // 5 min
-    await user.save();
+//     user.otp = hashedOtp;
+//     user.otpExpires = Date.now() + 5 * 60 * 1000; // 5 min
+//     await user.save();
 
-    await sendOtpMail(email, otp);
+//     await sendOtpMail(email, otp);
 
-    res.status(200).json({ message: "OTP resent successfully" });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
+//     res.status(200).json({ message: "OTP resent successfully" });
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
+//   }
+// });
 
 // -------------------------------------
 // LOGIN
