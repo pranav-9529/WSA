@@ -22,6 +22,8 @@ app.use("/api/folder", folderRoutes);
 const contactRoutes = require("./routes/contactRoutes");
 app.use("/api/contact", contactRoutes);
 
+const updateNameRoute = require("./routes/updateName");
+app.use("/api", updateNameRoute);
 
 // Root endpoint
 app.get("/", (req, res) => {

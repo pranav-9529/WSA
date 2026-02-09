@@ -99,6 +99,26 @@ router.get("/all", async (req, res) => {
   }
 });
 
+//--------------name-update----------------
+router.put('/update-name', auth, async (req, res) => {
+  try {
+    const { fname } = req.body;
+
+    if (!fname || fname.trim().length < 2) {
+      return res.status(400).json({ message: "Invalid name" });
+    }
+
+    await User.findByIdAndUpdate(
+      req.userId,      // comes from JWT
+      { fname: fname },
+      { new: true }
+    );
+
+    res.json({ message: "Name updated successfully" });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to update name" });
+  }
+});
 
 
 module.exports = router;
